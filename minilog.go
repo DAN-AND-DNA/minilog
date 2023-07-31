@@ -112,6 +112,7 @@ func New(configArg ...Config) *MiniLog {
 		// TODO kafka
 
 		options = append(options, zap.AddCaller(), zap.AddStacktrace(zapcore.ErrorLevel))
+		options = append(options, zap.AddCallerSkip(1))
 	} else {
 		// 默认都是开发环境
 		jsonEncoderConfig := zap.NewDevelopmentEncoderConfig()
@@ -134,6 +135,7 @@ func New(configArg ...Config) *MiniLog {
 		cores = append(cores, zapcore.NewCore(jsonEncoder, fileWriter, enabler))
 
 		options = append(options, zap.AddCaller(), zap.Development(), zap.AddStacktrace(zapcore.ErrorLevel))
+		options = append(options, zap.AddCallerSkip(1))
 	}
 
 	logger.Logger = zap.New(zapcore.NewTee(cores...)).WithOptions(options...)
@@ -149,4 +151,36 @@ func (logger *MiniLog) Close() {
 	if err := logger.Sync(); err != nil {
 		log.Println(err, string(debug.Stack()))
 	}
+}
+
+func (logger *MiniLog) Info(msg string, fields ...zap.Field) {
+	if logger == nil || logger.Logger == nil {
+		return
+	}
+
+	logger.Logger.Info(msg, fields...)
+}
+
+func (logger *MiniLog) Error(msg string, fields ...zap.Field) {
+	if logger == nil || logger.Logger == nil {
+		return
+	}
+
+	logger.Logger.Error(msg, fields...)
+}
+
+func (logger *MiniLog) Warn(msg string, fields ...zap.Field) {
+	if logger == nil || logger.Logger == nil {
+		return
+	}
+
+	logger.Logger.Warn(msg, fields...)
+}
+
+func (logger *MiniLog) Debug(msg string, fields ...zap.Field) {
+	if logger == nil || logger.Logger == nil {
+		return
+	}
+
+	logger.Logger.Debug(msg, fields...)
 }
